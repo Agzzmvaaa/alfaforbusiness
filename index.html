@@ -197,7 +197,7 @@
       </div>
       <span id="tierBadge" class="tier-badge tier-bronze">Бронза</span>
       <div class="topbar-fill"></div>
-      <button type="button" class="btn btn-secondary btn-sm" id="btnTour">Подсказки</button>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnTour" style="max-width:280px;line-height:1.25;white-space:normal;text-align:center;font-size:11px;padding:8px 10px;">Посмотреть приветственную навигацию</button>
       <span style="font-size:12px;color:var(--muted);">ООО «Демо»</span>
     </header>
 
@@ -358,27 +358,6 @@
     </main>
   </div>
 
-  <!-- Онбординг опыта компании -->
-  <div id="modalExperience" class="modal-overlay hidden">
-    <div class="modal">
-      <h3>Как вы работаете с кредитами?</h3>
-      <p>От этого зависит глубина подсказок и состав полей.</p>
-      <div class="field">
-        <label><input type="radio" name="exp" value="new" checked /> Первый опыт с кредитами в Альфе</label>
-      </div>
-      <div class="field">
-        <label><input type="radio" name="exp" value="mid" /> Заявка была, сделка не завершена</label>
-      </div>
-      <div class="field">
-        <label><input type="radio" name="exp" value="pro" /> Уже есть портфель кредитов</label>
-      </div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-secondary" id="btnExpSkip">Позже</button>
-        <button type="button" class="btn btn-primary" id="btnExpOk">Продолжить</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Приветственная навигация -->
   <div id="modalTour" class="modal-overlay hidden">
     <div class="modal">
@@ -395,7 +374,6 @@
   const STORAGE = 'alfa-credit-concept-v2';
 
   const defaultState = () => ({
-    experience: 'new',
     role: 'initiator',
     tier: 'bronze',
     draftAmount: 4900000,
@@ -405,7 +383,6 @@
     watchList: [],
     approval: null,
     tourSeen: false,
-    expModalSeen: false,
   });
 
   let state = loadState();
@@ -523,28 +500,12 @@
     const repeat = document.getElementById('repeatOnly');
     const goalHint = document.getElementById('goalHint');
 
-    if (state.experience === 'new') {
-      sub.textContent = 'Пошаговое оформление с подсказками по терминам.';
-      stepsEl.innerHTML = ['Продукт', 'Параметры', 'Компания', 'Документы', 'Проверка', 'Подпись'].map((x, i) =>
-        '<span class="' + (i === 0 ? 'on' : '') + '">' + (i + 1) + '. ' + x + '</span>').join('');
-      verify.classList.remove('hidden');
-      repeat.classList.add('hidden');
-      goalHint.textContent = 'Под выбранную цель подстраиваются поля и проверки.';
-    } else if (state.experience === 'mid') {
-      sub.textContent = 'Акцент на завершении заявки и статусах подписания.';
-      stepsEl.innerHTML = ['Параметры', 'Документы', 'Подписание', 'В банк'].map((x, i) =>
-        '<span class="' + (i === 0 ? 'on' : '') + '">' + (i + 1) + '. ' + x + '</span>').join('');
-      verify.classList.remove('hidden');
-      repeat.classList.add('hidden');
-      goalHint.textContent = '';
-    } else {
-      sub.textContent = 'Компактная форма и предзаполнение из истории.';
-      stepsEl.innerHTML = ['Параметры', 'Проверка', 'Подписание', 'В банк'].map((x, i) =>
-        '<span class="' + (i === 0 ? 'on' : '') + '">' + (i + 1) + '. ' + x + '</span>').join('');
-      verify.classList.remove('hidden');
-      repeat.classList.remove('hidden');
-      goalHint.textContent = 'Данные подставлены из прошлых сделок — отметьте проверку перед отправкой.';
-    }
+    sub.textContent = 'Пошаговое оформление с подсказками по терминам.';
+    stepsEl.innerHTML = ['Продукт', 'Параметры', 'Компания', 'Документы', 'Проверка', 'Подпись'].map((x, i) =>
+      '<span class="' + (i === 0 ? 'on' : '') + '">' + (i + 1) + '. ' + x + '</span>').join('');
+    verify.classList.remove('hidden');
+    repeat.classList.add('hidden');
+    goalHint.textContent = 'Под выбранную цель подстраиваются поля и проверки.';
     updateGoalDynamic();
     updateRoutePreview();
     renderWatchList();
@@ -553,11 +514,9 @@
   function updateGoalDynamic() {
     const g = document.getElementById('goalSelect').value;
     const hint = document.getElementById('goalHint');
-    if (state.experience === 'new') {
-      if (g === 'payroll') hint.textContent = 'Для выплат персоналу доступны сценарии с регулярными траншами.';
-      else if (g === 'equipment') hint.textContent = 'Для инвестиций могут потребоваться дополнительные поля по объекту.';
-      else hint.textContent = 'Под выбранную цель подстраиваются поля и проверки.';
-    }
+    if (g === 'payroll') hint.textContent = 'Для выплат персоналу доступны сценарии с регулярными траншами.';
+    else if (g === 'equipment') hint.textContent = 'Для инвестиций могут потребоваться дополнительные поля по объекту.';
+    else hint.textContent = 'Под выбранную цель подстраиваются поля и проверки.';
   }
 
   function roleAllows(view) {
@@ -616,7 +575,7 @@
 
   function startApprovalFlow() {
     const amount = parseAmount(document.getElementById('amountInput').value);
-    if (state.experience !== 'mid' && !document.getElementById('chkCompany').checked) {
+    if (!document.getElementById('chkCompany').checked) {
       toast('Отметьте проверку данных организации');
       return;
     }
@@ -749,20 +708,6 @@
 
   document.getElementById('btnBankContact').addEventListener('click', () => toast('Запрос отправлен менеджеру'));
 
-  document.getElementById('btnExpOk').addEventListener('click', () => {
-    state.expModalSeen = true;
-    state.experience = document.querySelector('input[name="exp"]:checked').value;
-    saveState();
-    document.getElementById('modalExperience').classList.add('hidden');
-    applyExperienceUI();
-    renderHomeForRole();
-  });
-  document.getElementById('btnExpSkip').addEventListener('click', () => {
-    state.expModalSeen = true;
-    saveState();
-    document.getElementById('modalExperience').classList.add('hidden');
-  });
-
   document.getElementById('btnTour').addEventListener('click', () => {
     document.getElementById('modalTour').classList.remove('hidden');
   });
@@ -774,17 +719,10 @@
 
   // Init
   setTierUI();
-  if (!state.expModalSeen) {
-    document.getElementById('modalExperience').classList.remove('hidden');
-  }
   applyExperienceUI();
   renderWatchList();
   renderHomeForRole();
   showView('home');
-
-  if (!state.tourSeen && state.expModalSeen) {
-    setTimeout(() => document.getElementById('modalTour').classList.remove('hidden'), 400);
-  }
 })();
   </script>
 </body>

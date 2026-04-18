@@ -532,14 +532,14 @@
       goalHint.textContent = 'Под выбранную цель подстраиваются поля и проверки.';
     } else if (state.experience === 'mid') {
       sub.textContent = 'Акцент на завершении заявки и статусах подписания.';
-      stepsEl.innerHTML = ['Параметры', 'Документы', 'Согласование', 'В банк'].map((x, i) =>
+      stepsEl.innerHTML = ['Параметры', 'Документы', 'Подписание', 'В банк'].map((x, i) =>
         '<span class="' + (i === 0 ? 'on' : '') + '">' + (i + 1) + '. ' + x + '</span>').join('');
       verify.classList.remove('hidden');
       repeat.classList.add('hidden');
       goalHint.textContent = '';
     } else {
       sub.textContent = 'Компактная форма и предзаполнение из истории.';
-      stepsEl.innerHTML = ['Параметры', 'Проверка', 'Согласование', 'В банк'].map((x, i) =>
+      stepsEl.innerHTML = ['Параметры', 'Проверка', 'Подписание', 'В банк'].map((x, i) =>
         '<span class="' + (i === 0 ? 'on' : '') + '">' + (i + 1) + '. ' + x + '</span>').join('');
       verify.classList.remove('hidden');
       repeat.classList.remove('hidden');

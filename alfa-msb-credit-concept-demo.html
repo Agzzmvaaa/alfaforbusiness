@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Альфа-Бизнес — кредитование</title>
+  <style>
+    :root {
+      --alfa-red: #ef3124;
+      --alfa-red-dark: #c9281c;
+      --bg: #f4f5f7;
+      --card: #fff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --warn-bg: #fffbeb;
+      --warn-border: #fcd34d;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; font-size: 14px; color: var(--text); background: var(--bg); line-height: 1.45; }
+    button, select, input, textarea { font: inherit; }
+    .hidden { display: none !important; }
+
+    .app { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+
+    .topbar {
+      grid-column: 1 / -1;
+      height: 56px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      position: sticky; top: 0; z-index: 200;
+    }
+    .logo { font-weight: 700; font-size: 17px; color: var(--alfa-red); }
+    .logo span { color: var(--text); font-weight: 600; }
+    .topbar-fill { flex: 1; }
+    .tier-badge {
+      font-size: 11px; font-weight: 700;
+      padding: 4px 10px; border-radius: 999px;
+      background: #fef3c7; color: #92400e;
+    }
+    .tier-bronze { background: #fde68a; color: #78350f; }
+    .tier-silver { background: #e5e7eb; color: #374151; }
+    .tier-gold { background: #fef08a; color: #854d0e; }
+    .tier-goldplus { background: linear-gradient(135deg, #fef08a, #fcd34d); color: #713f12; }
+
+    .role-bar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      font-size: 12px; color: var(--muted);
+    }
+    .role-bar select {
+      padding: 6px 10px; border: 1px solid var(--border); border-radius: 8px;
+      background: #fff; max-width: 220px;
+    }
+
+    .sidebar {
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      padding: 12px 0;
+      position: sticky; top: 56px;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+    }
+    .nav-group { padding: 8px 16px; font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .nav-item {
+      display: block; padding: 10px 16px;
+      color: var(--text); border-left: 3px solid transparent; cursor: pointer;
+      background: none; border-right: none; border-top: none; border-bottom: none; width: 100%; text-align: left;
+    }
+    .nav-item:hover { background: #f9fafb; }
+    .nav-item.active { background: #fef2f2; border-left-color: var(--alfa-red); font-weight: 600; }
+
+    .main { padding: 20px 24px 40px; max-width: 960px; }
+
+    .next-step {
+      background: linear-gradient(90deg, #fef2f2, #fff);
+      border: 1px solid #fecaca;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+    .next-step strong { color: var(--alfa-red-dark); }
+    .next-step .btn-sm { margin: 0; }
+
+    h1 { font-size: 22px; margin: 0 0 4px; font-weight: 700; }
+    .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+    .card h2 { font-size: 15px; margin: 0 0 12px; font-weight: 700; }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 18px; border-radius: 8px; font-weight: 600; border: none; cursor: pointer;
+    }
+    .btn-primary { background: var(--alfa-red); color: #fff; }
+    .btn-primary:hover { background: var(--alfa-red-dark); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; font-weight: 600; }
+
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+    }
+    .field textarea { min-height: 64px; resize: vertical; }
+    .field.warn { background: var(--warn-bg); padding: 10px; border-radius: 8px; border: 1px solid var(--warn-border); }
+    .field.warn label { color: #92400e; font-weight: 600; }
+    .check-row { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; margin-top: 8px; }
+    .check-row input { width: auto; margin-top: 3px; }
+
+    .steps {
+      display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
+    }
+    .steps span {
+      font-size: 11px; padding: 4px 10px; border-radius: 6px;
+      background: #e5e7eb; color: var(--muted);
+    }
+    .steps span.done { background: #d1fae5; color: #065f46; }
+    .steps span.on { background: #fef3c7; color: #92400e; font-weight: 700; }
+
+    .route-preview {
+      font-size: 13px;
+      padding: 12px;
+      background: #f9fafb;
+      border-radius: 8px;
+      border: 1px dashed var(--border);
+      margin-top: 8px;
+    }
+    .route-preview ul { margin: 8px 0 0; padding-left: 18px; }
+
+    .approval-item {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px;
+    }
+    .approval-item.pending { border-color: #fca5a5; background: #fff7ed; }
+    .approval-item.done { opacity: 0.85; background: #f0fdf4; }
+
+    .exec-summary .big { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; }
+    .exec-summary .muted { font-size: 13px; color: var(--muted); }
+
+    table.data { width: 100%; border-collapse: collapse; font-size: 13px; }
+    table.data th, table.data td { border-bottom: 1px solid var(--border); padding: 10px 8px; text-align: left; }
+    table.data th { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(17, 24, 39, 0.45);
+      display: flex; align-items: center; justify-content: center; z-index: 300;
+      padding: 16px;
+    }
+    .modal {
+      background: #fff; border-radius: 14px; max-width: 440px; width: 100%;
+      padding: 22px 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+    .modal h3 { margin: 0 0 12px; font-size: 18px; }
+    .modal p { font-size: 14px; color: var(--muted); margin: 0 0 14px; }
+    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; flex-wrap: wrap; }
+
+    .toast {
+      position: fixed; bottom: 20px; right: 20px; z-index: 400;
+      background: #111827; color: #fff; padding: 12px 16px; border-radius: 10px;
+      font-size: 13px; max-width: 320px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      animation: slideIn 0.25s ease;
+    }
+    @keyframes slideIn { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    @media (max-width: 800px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="logo">α <span>Альфа-Бизнес</span></div>
+      <div class="role-bar">
+        <span>Режим просмотра:</span>
+        <select id="roleSelect" aria-label="Роль пользователя">
+          <option value="initiator">Инициатор</option>
+          <option value="watcher">Наблюдатель</option>
+          <option value="a3">Согласующий (уровень 3)</option>
+          <option value="a2">Согласующий (уровень 2)</option>
+          <option value="a1">Согласующий (уровень 1)</option>
+          <option value="ceo">Руководитель / CEO</option>
+        </select>
+      </div>
+      <span id="tierBadge" class="tier-badge tier-bronze">Бронза</span>
+      <div class="topbar-fill"></div>
+      <button type="button" class="btn btn-secondary btn-sm" id="btnTour">Подсказки</button>
+      <span style="font-size:12px;color:var(--muted);">ООО «Демо»</span>
+    </header>
+
+    <aside class="sidebar">
+      <div class="nav-group">Меню</div>
+      <button type="button" class="nav-item active" data-view="home">Главная</button>
+      <button type="button" class="nav-item" data-view="apply">Новая заявка</button>
+      <button type="button" class="nav-item" data-view="queue">Согласования</button>
+      <button type="button" class="nav-item" data-view="credits">Кредитные продукты</button>
+      <button type="button" class="nav-item" data-view="docs">Документы</button>
+    </aside>
+
+    <main class="main">
+      <!-- Главная -->
+      <section id="view-home">
+        <div id="nextStepBar" class="next-step hidden">
+          <div><strong>Следующий шаг:</strong> <span id="nextStepText"></span></div>
+          <button type="button" class="btn btn-primary btn-sm" id="nextStepBtn">Перейти</button>
+        </div>
+
+        <h1 id="homeTitle">Главная</h1>
+        <p class="page-sub" id="homeSub"></p>
+
+        <div id="ceoPanel" class="card exec-summary hidden">
+          <h2>Сводка для руководства</h2>
+          <div class="row" style="display:flex;gap:24px;flex-wrap:wrap;">
+            <div><div class="muted">Лимит использован</div><div class="big" id="ceoUtil">42%</div></div>
+            <div><div class="muted">Ближайший платёж</div><div style="font-size:18px;font-weight:700;" id="ceoPay">12 мая</div></div>
+            <div><div class="muted">Отлагательные условия</div><div style="font-size:18px;font-weight:700;" id="ceoCov">1 активно</div></div>
+          </div>
+          <p style="margin:14px 0 0;font-size:13px;"><button type="button" class="btn btn-secondary btn-sm" id="btnBankContact">Связаться с банком</button></p>
+        </div>
+
+        <div class="card" id="tierCard">
+          <h2>Программа уровней</h2>
+          <p style="font-size:13px;color:var(--muted);margin:0 0 8px;">Текущий уровень: <strong id="tierName">Бронза</strong>. Следующий пересчёт: <span id="tierDate">01.07.2026</span></p>
+          <p style="font-size:13px;margin:0;" id="tierHint">Выполняйте условия сделки и сроки документов — откроются упрощённые сценарии и приоритет в очереди.</p>
+        </div>
+
+        <div class="card">
+          <h2>Быстрые действия</h2>
+          <p style="margin:0 0 12px;">
+            <button type="button" class="btn btn-primary" id="btnQuickApply">Новая заявка на кредит</button>
+            <button type="button" class="btn btn-secondary" id="btnQuickTranche" style="margin-left:8px;">Новый транш</button>
+          </p>
+        </div>
+      </section>
+
+      <!-- Заявка -->
+      <section id="view-apply" class="hidden">
+        <h1>Новая заявка</h1>
+        <p class="page-sub" id="applySub"></p>
+
+        <div class="steps" id="applySteps"></div>
+
+        <div class="card" id="block-goal">
+          <h2>Цель и продукт</h2>
+          <div class="field">
+            <label for="goalSelect">Цель кредита</label>
+            <select id="goalSelect">
+              <option value="turnover">Пополнение оборотных средств</option>
+              <option value="payroll">Фонд оплаты труда</option>
+              <option value="equipment">Оборудование / инвестиции</option>
+              <option value="other">Иное</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="productSelect">Продукт</label>
+            <select id="productSelect">
+              <option value="vkl">Кредитная линия (ВКЛ)</option>
+              <option value="over">Овердрафт</option>
+              <option value="loan">Кредит</option>
+            </select>
+          </div>
+          <p style="font-size:12px;color:var(--muted);margin:0;" id="goalHint"></p>
+        </div>
+
+        <div class="card" id="block-params">
+          <h2>Параметры</h2>
+          <div class="field" id="wrapAmount">
+            <label for="amountInput">Сумма, ₽</label>
+            <input type="text" id="amountInput" inputmode="numeric" value="4900000" />
+          </div>
+          <div class="field">
+            <label for="termInput">Срок, мес.</label>
+            <input type="text" id="termInput" value="36" />
+          </div>
+          <div class="field warn hidden" id="verifyCompany">
+            <label>Не забудьте проверить</label>
+            <input type="text" id="companyName" value='ООО «Демо»' />
+            <div class="check-row">
+              <input type="checkbox" id="chkCompany" />
+              <label for="chkCompany">Данные организации проверены</label>
+            </div>
+          </div>
+          <div class="field hidden" id="repeatOnly">
+            <label for="commentInput">Комментарий</label>
+            <textarea id="commentInput"></textarea>
+          </div>
+          <div class="route-preview" id="routePreview"></div>
+        </div>
+
+        <div class="card hidden" id="block-watchers">
+          <h2>Наблюдатели</h2>
+          <p style="font-size:12px;color:var(--muted);margin:0 0 8px;">Без права подписи — видят статус заявки.</p>
+          <div class="field">
+            <label for="watchersInput">E-mail через запятую</label>
+            <input type="text" id="watchersInput" placeholder="fin@company.ru, legal@company.ru" />
+          </div>
+        </div>
+
+        <p>
+          <button type="button" class="btn btn-primary" id="btnSubmitInternal">Отправить на согласование в компании</button>
+          <button type="button" class="btn btn-secondary" id="btnSaveDraft">Сохранить черновик</button>
+        </p>
+      </section>
+
+      <!-- Очередь согласований -->
+      <section id="view-queue" class="hidden">
+        <h1>Согласования</h1>
+        <p class="page-sub">Внутренний маршрут до отправки в банк. Срок ответа по каждому шагу — до 5 рабочих дней (напоминание при задержке).</p>
+        <div class="card" id="approvalBox"></div>
+      </section>
+
+      <!-- Кредиты -->
+      <section id="view-credits" class="hidden">
+        <h1>Кредитные продукты</h1>
+        <p class="page-sub">Действующие договоры</p>
+        <div class="card">
+          <table class="data">
+            <thead><tr><th>Продукт</th><th>Лимит</th><th>Остаток</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td>ВКЛ</td>
+                <td>8 000 000 ₽</td>
+                <td>4 800 000 ₽</td>
+                <td><button type="button" class="btn btn-primary btn-sm" id="btnTrancheFromCredits">Новый транш</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Документы -->
+      <section id="view-docs" class="hidden">
+        <h1>Документы по сделке</h1>
+        <p class="page-sub">Отправка и подписание</p>
+        <div class="card">
+          <div class="field"><label>Тип документа</label><select><option>Отчётность</option><option>Иное</option></select></div>
+          <div class="field"><label>Файл</label><input type="file" /></div>
+          <button type="button" class="btn btn-primary">Подписать и отправить</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Онбординг опыта компании -->
+  <div id="modalExperience" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>Как вы работаете с кредитами?</h3>
+      <p>От этого зависит глубина подсказок и состав полей.</p>
+      <div class="field">
+        <label><input type="radio" name="exp" value="new" checked /> Первый опыт с кредитами в Альфе</label>
+      </div>
+      <div class="field">
+        <label><input type="radio" name="exp" value="mid" /> Заявка была, сделка не завершена</label>
+      </div>
+      <div class="field">
+        <label><input type="radio" name="exp" value="pro" /> Уже есть портфель кредитов</label>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="btnExpSkip">Позже</button>
+        <button type="button" class="btn btn-primary" id="btnExpOk">Продолжить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Приветственная навигация -->
+  <div id="modalTour" class="modal-overlay hidden">
+    <div class="modal">
+      <h3>Коротко о разделе</h3>
+      <p id="tourText">Здесь вы создаёте заявку, назначаете наблюдателей и запускаете внутреннее согласование. После всех подписей заявка уходит в банк.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-primary" id="btnTourClose">Понятно</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+(function () {
+  const STORAGE = 'alfa-credit-concept-v1';
+
+  const defaultState = () => ({
+    experience: 'new',
+    role: 'initiator',
+    tier: 'bronze',
+    draftAmount: 4900000,
+    draftTerm: 36,
+    draftGoal: 'turnover',
+    draftProduct: 'vkl',
+    watchers: '',
+    approval: null,
+    tourSeen: false,
+    expModalSeen: false,
+  });
+
+  let state = loadState();
+
+  function loadState() {
+    try {
+      const j = localStorage.getItem(STORAGE);
+      if (j) return { ...defaultState(), ...JSON.parse(j) };
+    } catch (e) {}
+    return defaultState();
+  }
+
+  function saveState() {
+    localStorage.setItem(STORAGE, JSON.stringify(state));
+  }
+
+  function toast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3200);
+  }
+
+  function formatMoney(n) {
+    return new Intl.NumberFormat('ru-RU').format(n) + ' ₽';
+  }
+
+  function parseAmount(str) {
+    const d = String(str).replace(/\D/g, '');
+    return d ? parseInt(d, 10) : 0;
+  }
+
+  const thresholds = { a3: 2000000, a2: 5000000 };
+
+  function buildRoute(amount) {
+    const steps = [];
+    if (amount <= thresholds.a3) {
+      steps.push({ id: 'a3', name: 'Согласующий уровня 3', desc: 'до ' + formatMoney(thresholds.a3) });
+    } else if (amount <= thresholds.a2) {
+      steps.push({ id: 'a3', name: 'Согласующий уровня 3', desc: 'до ' + formatMoney(thresholds.a3) });
+      steps.push({ id: 'a2', name: 'Согласующий уровня 2', desc: 'до ' + formatMoney(thresholds.a2) });
+    } else {
+      steps.push({ id: 'a3', name: 'Согласующий уровня 3', desc: 'до ' + formatMoney(thresholds.a3) });
+      steps.push({ id: 'a2', name: 'Согласующий уровня 2', desc: 'до ' + formatMoney(thresholds.a2) });
+      steps.push({ id: 'a1', name: 'Согласующий уровня 1', desc: 'свыше ' + formatMoney(thresholds.a2) });
+    }
+    return steps;
+  }
+
+  function updateRoutePreview() {
+    const amount = parseAmount(document.getElementById('amountInput').value);
+    const el = document.getElementById('routePreview');
+    const steps = buildRoute(amount);
+    el.innerHTML = '<strong>Внутренний маршрут</strong><ul>' +
+      steps.map((s, i) => '<li>Шаг ' + (i + 1) + ': ' + s.name + '</li>').join('') +
+      '</ul><span style="font-size:12px;color:var(--muted)">После всех шагов — отправка в Альфа-Банк</span>';
+  }
+
+  function setTierUI() {
+    const map = {
+      bronze: { label: 'Бронза', cls: 'tier-bronze' },
+      silver: { label: 'Серебро', cls: 'tier-silver' },
+      gold: { label: 'Золото', cls: 'tier-gold' },
+      goldplus: { label: 'Золото+', cls: 'tier-goldplus' },
+    };
+    const t = map[state.tier] || map.bronze;
+    const badge = document.getElementById('tierBadge');
+    badge.textContent = t.label;
+    badge.className = 'tier-badge ' + t.cls;
+    document.getElementById('tierName').textContent = t.label;
+  }
+
+  function applyExperienceUI() {
+    const sub = document.getElementById('applySub');
+    const stepsEl = document.getElementById('applySteps');
+    const verify = document.getElementById('verifyCompany');
+    const repeat = document.getElementById('repeatOnly');
+    const goalHint = document.getElementById('goalHint');
+
+    if (state.experience === 'new') {
+      sub.textContent = 'Пошаговое оформление с подсказками по терминам.';
+      stepsEl.innerHTML = ['Продукт', 'Параметры', 'Компания', 'Документы', 'Проверка', 'Подпись'].map((x, i) =>
+        '<span class="' + (i === 0 ? 'on' : '') + '">' + (i + 1) + '. ' + x + '</span>').join('');
+      verify.classList.remove('hidden');
+      repeat.classList.add('hidden');
+      goalHint.textContent = 'Под выбранную цель подстраиваются поля и проверки.';
+    } else if (state.experience === 'mid') {
+      sub.textContent = 'Акцент на завершении заявки и статусах согласования.';
+      stepsEl.innerHTML = ['Параметры', 'Документы', 'Согласование', 'В банк'].map((x, i) =>
+        '<span class="' + (i === 0 ? 'on' : '') + '">' + (i + 1) + '. ' + x + '</span>').join('');
+      verify.classList.remove('hidden');
+      repeat.classList.add('hidden');
+      goalHint.textContent = '';
+    } else {
+      sub.textContent = 'Компактная форма и предзаполнение из истории.';
+      stepsEl.innerHTML = ['Параметры', 'Проверка', 'Согласование', 'В банк'].map((x, i) =>
+        '<span class="' + (i === 0 ? 'on' : '') + '">' + (i + 1) + '. ' + x + '</span>').join('');
+      verify.classList.remove('hidden');
+      repeat.classList.remove('hidden');
+      goalHint.textContent = 'Данные подставлены из прошлых сделок — отметьте проверку перед отправкой.';
+    }
+    updateGoalDynamic();
+    updateRoutePreview();
+  }
+
+  function updateGoalDynamic() {
+    const g = document.getElementById('goalSelect').value;
+    const hint = document.getElementById('goalHint');
+    if (state.experience === 'new') {
+      if (g === 'payroll') hint.textContent = 'Для выплат персоналу доступны сценарии с регулярными траншами.';
+      else if (g === 'equipment') hint.textContent = 'Для инвестиций могут потребоваться дополнительные поля по объекту.';
+      else hint.textContent = 'Под выбранную цель подстраиваются поля и проверки.';
+    }
+  }
+
+  function roleAllows(view) {
+    if (view === 'queue') {
+      return ['a3', 'a2', 'a1', 'initiator', 'ceo', 'watcher'].indexOf(state.role) >= 0;
+    }
+    if (view === 'apply') {
+      return state.role === 'initiator' || state.role === 'ceo';
+    }
+    return true;
+  }
+
+  function showView(name) {
+    ['home', 'apply', 'queue', 'credits', 'docs'].forEach(v => {
+      const el = document.getElementById('view-' + v);
+      if (el) el.classList.toggle('hidden', v !== name);
+    });
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-view') === name);
+    });
+    if (name === 'queue') renderApprovals();
+    if (name === 'apply') applyExperienceUI();
+  }
+
+  function renderHomeForRole() {
+    const ceo = document.getElementById('ceoPanel');
+    const homeSub = document.getElementById('homeSub');
+    const nextBar = document.getElementById('nextStepBar');
+
+    if (state.role === 'ceo') {
+      ceo.classList.remove('hidden');
+      homeSub.textContent = 'Сводка по обязательствам и срокам без операционной детализации.';
+      nextBar.classList.remove('hidden');
+      document.getElementById('nextStepText').textContent = 'Просмотреть отлагательные условия по кредитной линии';
+      document.getElementById('nextStepBtn').onclick = () => { showView('credits'); toast('Раздел открыт'); };
+    } else {
+      ceo.classList.add('hidden');
+      homeSub.textContent = state.role === 'initiator'
+        ? 'Создание заявок и сопровождение до отправки в банк.'
+        : 'Просмотр и согласование в рамках ваших полномочий.';
+      if (state.approval && state.approval.status !== 'bank') {
+        nextBar.classList.remove('hidden');
+        document.getElementById('nextStepText').textContent = 'Согласовать заявку во внутренней очереди';
+        document.getElementById('nextStepBtn').onclick = () => showView('queue');
+      } else {
+        nextBar.classList.add('hidden');
+      }
+    }
+  }
+
+  function startApprovalFlow() {
+    const amount = parseAmount(document.getElementById('amountInput').value);
+    if (state.experience !== 'mid' && !document.getElementById('chkCompany').checked) {
+      toast('Отметьте проверку данных организации');
+      return;
+    }
+    const steps = buildRoute(amount);
+    state.approval = {
+      id: 'APP-' + Date.now(),
+      amount: amount,
+      status: 'internal',
+      currentIndex: 0,
+      steps: steps.map(s => ({ ...s, approved: false })),
+    };
+    saveState();
+    toast('Заявка отправлена на внутреннее согласование');
+    showView('queue');
+    renderApprovals();
+  }
+
+  function renderApprovals() {
+    const box = document.getElementById('approvalBox');
+    if (!state.approval) {
+      box.innerHTML = '<p style="margin:0;color:var(--muted);">Нет активных заявок на согласование.</p>';
+      return;
+    }
+    const A = state.approval;
+    let html = '<p style="margin:0 0 12px;font-weight:600;">Заявка ' + A.id + ' · ' + formatMoney(A.amount) + '</p>';
+    A.steps.forEach((s, i) => {
+      const isPending = i === A.currentIndex && !s.approved;
+      const roleMatch =
+        (s.id === 'a3' && state.role === 'a3') ||
+        (s.id === 'a2' && state.role === 'a2') ||
+        (s.id === 'a1' && state.role === 'a1');
+      const canClick = isPending && roleMatch;
+      html += '<div class="approval-item ' + (s.approved ? 'done' : isPending ? 'pending' : '') + '">';
+      html += '<div><strong>' + s.name + '</strong><div style="font-size:12px;color:var(--muted);">' + s.desc + '</div></div>';
+      if (s.approved) html += '<span style="color:#065f46;font-weight:600;">Подписано</span>';
+      else if (isPending) {
+        html += '<button type="button" class="btn btn-primary btn-sm" data-approve="' + i + '"' + (canClick ? '' : ' disabled') + '>Подписать</button>';
+      } else html += '<span style="color:var(--muted);">Ожидает очереди</span>';
+      html += '</div>';
+    });
+    if (A.currentIndex >= A.steps.length) {
+      html += '<p style="margin-top:12px;"><button type="button" class="btn btn-primary" id="btnSendBank">Отправить в Альфа-Банк</button></p>';
+    }
+    box.innerHTML = html;
+    box.querySelectorAll('[data-approve]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-approve'), 10);
+        const step = A.steps[idx];
+        step.approved = true;
+        A.currentIndex++;
+        saveState();
+        renderApprovals();
+        toast('Подпись сохранена');
+      });
+    });
+    const sendB = document.getElementById('btnSendBank');
+    if (sendB) {
+      sendB.addEventListener('click', () => {
+        A.status = 'bank';
+        state.tier = state.tier === 'bronze' ? 'silver' : state.tier;
+        saveState();
+        setTierUI();
+        toast('Заявка отправлена в банк');
+        showView('home');
+        renderHomeForRole();
+      });
+    }
+  }
+
+  // Events
+  document.getElementById('roleSelect').value = state.role;
+  document.getElementById('roleSelect').addEventListener('change', e => {
+    state.role = e.target.value;
+    saveState();
+    renderHomeForRole();
+    toast('Режим: ' + e.target.selectedOptions[0].textContent);
+  });
+
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const v = btn.getAttribute('data-view');
+      if (!roleAllows(v)) {
+        toast('Смените роль на «Инициатор» или «Руководитель» для создания заявки');
+        return;
+      }
+      showView(v);
+    });
+  });
+
+  document.getElementById('amountInput').addEventListener('input', updateRoutePreview);
+  document.getElementById('goalSelect').addEventListener('change', updateGoalDynamic);
+
+  document.getElementById('btnQuickApply').addEventListener('click', () => {
+    if (!roleAllows('apply')) {
+      document.getElementById('roleSelect').value = 'initiator';
+      state.role = 'initiator';
+      saveState();
+    }
+    showView('apply');
+  });
+  document.getElementById('btnQuickTranche').addEventListener('click', () => showView('credits'));
+  document.getElementById('btnTrancheFromCredits').addEventListener('click', () => {
+    document.getElementById('roleSelect').value = 'initiator';
+    state.role = 'initiator';
+    saveState();
+    showView('apply');
+    toast('Оформление транша — в заявке укажите сумму и цель');
+  });
+
+  document.getElementById('btnSubmitInternal').addEventListener('click', startApprovalFlow);
+  document.getElementById('btnSaveDraft').addEventListener('click', () => toast('Черновик сохранён'));
+
+  document.getElementById('btnBankContact').addEventListener('click', () => toast('Запрос отправлен менеджеру'));
+
+  document.getElementById('btnExpOk').addEventListener('click', () => {
+    state.expModalSeen = true;
+    state.experience = document.querySelector('input[name="exp"]:checked').value;
+    saveState();
+    document.getElementById('modalExperience').classList.add('hidden');
+    applyExperienceUI();
+    renderHomeForRole();
+  });
+  document.getElementById('btnExpSkip').addEventListener('click', () => {
+    state.expModalSeen = true;
+    saveState();
+    document.getElementById('modalExperience').classList.add('hidden');
+  });
+
+  document.getElementById('btnTour').addEventListener('click', () => {
+    document.getElementById('modalTour').classList.remove('hidden');
+  });
+  document.getElementById('btnTourClose').addEventListener('click', () => {
+    document.getElementById('modalTour').classList.add('hidden');
+    state.tourSeen = true;
+    saveState();
+  });
+
+  // Init
+  setTierUI();
+  if (!state.expModalSeen) {
+    document.getElementById('modalExperience').classList.remove('hidden');
+  }
+  applyExperienceUI();
+  renderHomeForRole();
+  showView('home');
+
+  if (!state.tourSeen && state.expModalSeen) {
+    setTimeout(() => document.getElementById('modalTour').classList.remove('hidden'), 400);
+  }
+})();
+  </script>
+</body>
+</html>

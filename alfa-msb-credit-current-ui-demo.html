@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Альфа-Банк — кредитные продукты МСБ (макет текущего сервиса по кейсу)</title>
+  <style>
+    :root {
+      --alfa-red: #ef3124;
+      --alfa-red-dark: #c9281c;
+      --bg: #f4f5f7;
+      --card: #fff;
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --sidebar: #fff;
+      --accent: #111827;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--bg);
+      line-height: 1.45;
+    }
+    a { color: #2563eb; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .app {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+
+    /* Шапка */
+    .topbar {
+      grid-column: 1 / -1;
+      height: 56px;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--alfa-red);
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--accent); font-weight: 600; }
+    .topbar-search {
+      flex: 1;
+      max-width: 420px;
+    }
+    .topbar-search input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .topbar-user { margin-left: auto; font-size: 13px; color: var(--muted); }
+
+    /* Сайдбар */
+    .sidebar {
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      padding: 16px 0 24px;
+      position: sticky;
+      top: 56px;
+      align-self: start;
+      height: calc(100vh - 56px);
+      overflow-y: auto;
+    }
+    .nav-group { padding: 8px 16px; font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .nav-item {
+      display: block;
+      padding: 10px 16px 10px 20px;
+      color: var(--text);
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: #f9fafb; }
+    .nav-item.active { background: #fef2f2; border-left-color: var(--alfa-red); font-weight: 600; }
+
+    /* Контент */
+    .main {
+      padding: 20px 24px 48px;
+      max-width: 1100px;
+    }
+    .breadcrumb {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
+    }
+    .sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    /* Навигация по «слайдам» кейса */
+    .jump-nav {
+      position: sticky;
+      top: 56px;
+      z-index: 90;
+      background: linear-gradient(to bottom, var(--bg) 70%, transparent);
+      padding: 8px 0 16px;
+      margin: -8px 0 16px;
+    }
+    .jump-nav-inner {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+    .jump-nav label { font-size: 12px; color: var(--muted); margin-right: 6px; }
+    .jump-nav a {
+      font-size: 12px;
+      padding: 6px 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--text);
+    }
+    .jump-nav a:hover { border-color: var(--alfa-red); color: var(--alfa-red); text-decoration: none; }
+
+    /* Карточки экранов */
+    .screen {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      scroll-margin-top: 120px;
+    }
+    .screen h2 {
+      font-size: 15px;
+      margin: 0 0 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      background: #fee2e2;
+      color: var(--alfa-red-dark);
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
+    .screen-desc { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+
+    .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+    .col { flex: 1; min-width: 200px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-primary { background: var(--alfa-red); color: #fff; }
+    .btn-primary:hover { background: var(--alfa-red-dark); }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+
+    .option-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .option-card {
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .option-card:hover { border-color: #fca5a5; }
+    .option-card.selected { border-color: var(--alfa-red); box-shadow: 0 0 0 1px var(--alfa-red); }
+    .option-card h3 { margin: 0 0 6px; font-size: 14px; }
+    .option-card p { margin: 0; font-size: 12px; color: var(--muted); }
+
+    .steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 16px 0;
+      padding: 12px;
+      background: #f9fafb;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+    .steps span {
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #e5e7eb;
+      color: var(--muted);
+    }
+    .steps span.done { background: #d1fae5; color: #065f46; }
+    .steps span.current { background: #fef3c7; color: #92400e; font-weight: 600; }
+
+    label.field { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+    input.inp, select.inp, textarea.inp {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    textarea.inp { min-height: 72px; resize: vertical; }
+    .field-row { margin-bottom: 14px; }
+
+    .limit-bars { margin: 12px 0; }
+    .bar-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+    .bar-track { height: 10px; background: #e5e7eb; border-radius: 5px; overflow: hidden; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, #fca5a5, var(--alfa-red)); border-radius: 5px; }
+
+    .product-card {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      max-width: 360px;
+    }
+    .product-card h3 { margin: 0 0 8px; font-size: 15px; }
+    .product-meta { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+    .tag { font-size: 11px; background: #f3f4f6; padding: 2px 8px; border-radius: 4px; }
+
+    table.data {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    table.data th, table.data td {
+      border-bottom: 1px solid var(--border);
+      padding: 10px 12px;
+      text-align: left;
+    }
+    table.data th { background: #f9fafb; font-weight: 600; font-size: 12px; color: var(--muted); }
+    table.data tr:hover td { background: #fafafa; }
+
+    .status { font-size: 12px; padding: 4px 8px; border-radius: 6px; display: inline-block; }
+    .status-wait { background: #fef3c7; color: #92400e; }
+    .status-ok { background: #d1fae5; color: #065f46; }
+    .status-draft { background: #e5e7eb; color: #374151; }
+
+    .split-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 800px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .split-2 { grid-template-columns: 1fr; }
+    }
+
+    .footnote {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="logo">α <span>Альфа-Бизнес</span></div>
+      <div class="topbar-search"><input type="search" placeholder="Поиск по разделам…" aria-label="Поиск" /></div>
+      <div class="topbar-user">ООО «Пример» · Иванов И.И.</div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="nav-group">Банк</div>
+      <a class="nav-item" href="#">Главная</a>
+      <a class="nav-item" href="#">Счета и платежи</a>
+      <div class="nav-group">Кредиты</div>
+      <a class="nav-item active" href="#fig1">Кредитные продукты</a>
+      <a class="nav-item" href="#fig2">Заявки</a>
+      <a class="nav-item" href="#fig4">Действующие</a>
+      <a class="nav-item" href="#fig13">Договоры</a>
+      <div class="nav-group">Сервисы</div>
+      <a class="nav-item" href="#">Валютный контроль</a>
+      <a class="nav-item" href="#">Зарплатный проект</a>
+    </aside>
+
+    <main class="main">
+      <div class="breadcrumb">Главная · Кредитные продукты · Заявки</div>
+      <h1>Кредитные продукты</h1>
+      <p class="sub">Макет интерфейса по описанию кейса (PDF, с. 13–26): рис. 1–15 — текущая функциональность сервиса для МСБ.</p>
+
+      <div class="jump-nav">
+        <div class="jump-nav-inner">
+          <label>Перейти к экрану:</label>
+          <a href="#fig1">Рис. 1 Лимит</a>
+          <a href="#fig2">Рис. 2 Продукт</a>
+          <a href="#fig3">Рис. 3 Лимит установлен</a>
+          <a href="#fig4">Рис. 4 Карточка</a>
+          <a href="#fig5">Рис. 5 Таблица</a>
+          <a href="#fig6">Рис. 6 Транш</a>
+          <a href="#fig7">Рис. 7 Ставка</a>
+          <a href="#fig8">Рис. 8 Статусы</a>
+          <a href="#fig9">Рис. 9–10 Сделка</a>
+          <a href="#fig11">Рис. 11–12 Документы</a>
+          <a href="#fig13">Рис. 13 Договоры</a>
+          <a href="#fig14">Рис. 14 Досрочно</a>
+          <a href="#fig15">Рис. 15 Закрытые</a>
+        </div>
+      </div>
+
+      <!-- Рис. 1 — заявка на лимит -->
+      <section class="screen" id="fig1">
+        <h2>Заявка на лимит <span class="badge">рис. 1</span></h2>
+        <p class="screen-desc">Раздел «Кредитные продукты» → «Заявки» → «Подать заявку» / «Новая заявка». На экране одновременно две или три опции выбора типа заявки.</p>
+        <div class="option-cards">
+          <div class="option-card selected">
+            <h3>Заявка на лимит</h3>
+            <p>Установить максимальную сумму кредитного риска на компанию</p>
+          </div>
+          <div class="option-card">
+            <h3>Заявка на продукт</h3>
+            <p>Рамочный договор под уже одобренный лимит</p>
+          </div>
+          <div class="option-card">
+            <h3>Новая заявка</h3>
+            <p>Другой сценарий (по продуктовой логике банка)</p>
+          </div>
+        </div>
+        <p style="margin-top:16px;"><button class="btn btn-primary" type="button">Продолжить</button></p>
+      </section>
+
+      <!-- Рис. 2 — заявка на продукт, 9 шагов -->
+      <section class="screen" id="fig2">
+        <h2>Заявка на кредитный продукт <span class="badge">рис. 2</span></h2>
+        <p class="screen-desc">Этап «Выбор продукта», сумма, срок, комментарий. Кнопка «Продолжить» активна после заполнения обязательных полей. Всего 9 шагов — панель прогресса.</p>
+        <div class="steps">
+          <span class="done">1. Продукт</span>
+          <span class="current">2. Параметры</span>
+          <span>3. Компания</span>
+          <span>4. Документы</span>
+          <span>5–9. …</span>
+        </div>
+        <div class="row">
+          <div class="col">
+            <div class="field-row">
+              <label class="field">Тип продукта</label>
+              <select class="inp">
+                <option>Кредитная линия (ВКЛ)</option>
+                <option>Овердрафт</option>
+                <option>Кредит</option>
+                <option>Другое</option>
+              </select>
+            </div>
+            <div class="field-row">
+              <label class="field">Сумма</label>
+              <input class="inp" type="text" value="20 000 000 ₽" />
+            </div>
+            <div class="field-row">
+              <label class="field">Срок договора</label>
+              <input class="inp" type="text" value="36 месяцев" />
+            </div>
+            <div class="field-row">
+              <label class="field">Комментарий (необязательно)</label>
+              <textarea class="inp" placeholder="Кратко о цели финансирования"></textarea>
+            </div>
+            <button class="btn btn-primary" type="button">Продолжить</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Рис. 3 — установленный лимит -->
+      <section class="screen" id="fig3">
+        <h2>Установленный кредитный лимит <span class="badge">рис. 3</span></h2>
+        <p class="screen-desc">Лимит кредитного риска на компанию и лимит договора (не выше общего лимита).</p>
+        <div class="limit-bars">
+          <div class="bar-label"><span>Лимит кредитного риска</span><span>10 000 000 ₽</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:100%"></div></div>
+        </div>
+        <div class="limit-bars">
+          <div class="bar-label"><span>Лимит договора (кредитная линия)</span><span>8 000 000 ₽</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:80%"></div></div>
+        </div>
+        <p style="font-size:13px;color:var(--muted);margin-top:12px;">Остаток для траншей рассчитывается в рамках лимита договора.</p>
+      </section>
+
+      <!-- Рис. 4 — карточка + Новый транш -->
+      <section class="screen" id="fig4">
+        <h2>Действующие продукты — карточный вид <span class="badge">рис. 4</span></h2>
+        <p class="screen-desc">«Кредитные продукты» → «Действующие». На карточке кредитной линии — кнопка «Новый транш».</p>
+        <div class="product-card">
+          <h3>Кредитная линия № …</h3>
+          <div class="product-meta">Договор от 12.03.2025 · <span class="tag">ВКЛ</span></div>
+          <div class="bar-label" style="margin-bottom:6px;"><span>Использовано</span><span>3 200 000 ₽ из 8 000 000 ₽</span></div>
+          <div class="bar-track"><div class="bar-fill" style="width:40%"></div></div>
+          <p style="margin:14px 0 0;"><button class="btn btn-primary" type="button">Новый транш</button></p>
+        </div>
+      </section>
+
+      <!-- Рис. 5 — таблица -->
+      <section class="screen" id="fig5">
+        <h2>Табличный вид <span class="badge">рис. 5</span></h2>
+        <p class="screen-desc">Та же выборка в виде таблицы; кнопка «Новый транш» в строке или после выбора продукта.</p>
+        <table class="data">
+          <thead>
+            <tr><th>Продукт</th><th>Лимит</th><th>Остаток</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Кредитная линия (ВКЛ)</td>
+              <td>8 000 000 ₽</td>
+              <td>4 800 000 ₽</td>
+              <td><button class="btn btn-secondary" type="button" style="padding:6px 12px;font-size:12px;">Новый транш</button></td>
+            </tr>
+            <tr>
+              <td>Овердрафт</td>
+              <td>2 000 000 ₽</td>
+              <td>2 000 000 ₽</td>
+              <td><button class="btn btn-secondary" type="button" style="padding:6px 12px;font-size:12px;">Новый транш</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Рис. 6 — заявление на транш -->
+      <section class="screen" id="fig6">
+        <h2>Заявление на транш <span class="badge">рис. 6</span></h2>
+        <p class="screen-desc">Сумма, цель, ставка, счёт, срок погашения; ниже — правила погашения (зависят от рамочного договора).</p>
+        <div class="row">
+          <div class="col">
+            <div class="field-row">
+              <label class="field">Сумма транша</label>
+              <input class="inp" type="text" value="1 500 000 ₽" />
+            </div>
+            <div class="field-row">
+              <label class="field">Цель</label>
+              <input class="inp" type="text" value="Пополнение оборотных средств" />
+            </div>
+            <div class="field-row">
+              <label class="field">Счёт зачисления</label>
+              <select class="inp"><option>40702… в Альфа-Банке</option></select>
+            </div>
+            <div class="field-row">
+              <label class="field">Срок погашения транша</label>
+              <input class="inp" type="text" value="12 месяцев" />
+            </div>
+          </div>
+          <div class="col">
+            <div class="field-row">
+              <label class="field">Процентная ставка</label>
+              <input class="inp" type="text" placeholder="Будет на шаге определения ставки" />
+            </div>
+            <p style="font-size:12px;color:var(--muted);">Далее: варианты досрочного погашения и периодичность (по графику / в конце срока транша).</p>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="button">Продолжить</button>
+      </section>
+
+      <!-- Рис. 7 — ставка -->
+      <section class="screen" id="fig7">
+        <h2>Ставка и дополнительные документы <span class="badge">рис. 7</span></h2>
+        <p class="screen-desc">Ставка автоматически или вручную; уточнение у менеджера. Варианты погашения и периодичность — из кейса.</p>
+        <div class="field-row">
+          <label class="field">Ставка</label>
+          <input class="inp" type="text" value="17,5% годовых (расчёт автоматически)" />
+        </div>
+        <p style="font-size:13px;margin:12px 0 8px;font-weight:600;">Варианты погашения</p>
+        <ul style="margin:0;padding-left:18px;font-size:13px;color:var(--muted);">
+          <li>С правом досрочного погашения</li>
+          <li>С правом досрочного с определённой даты</li>
+          <li>С правом досрочного не ранее чем за 5 дней до даты погашения</li>
+          <li>Без права досрочного (с платой)</li>
+          <li>Без права досрочного</li>
+        </ul>
+        <p style="font-size:13px;margin:12px 0 8px;font-weight:600;">Периодичность</p>
+        <ul style="margin:0;padding-left:18px;font-size:13px;color:var(--muted);">
+          <li>В конце срока транша</li>
+          <li>По графику</li>
+        </ul>
+      </section>
+
+      <!-- Рис. 8 — статусы заявлений на транш -->
+      <section class="screen" id="fig8">
+        <h2>Заявления на транши <span class="badge">рис. 8</span></h2>
+        <p class="screen-desc">«Кредитные продукты» → «Кредитная линия» → «Заявления на транши». Статусы также в разделах «Заявления на транш» и «Транши».</p>
+        <table class="data">
+          <thead>
+            <tr><th>№</th><th>Сумма</th><th>Дата</th><th>Статус</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>…4521</td><td>1 500 000 ₽</td><td>18.04.2026</td><td><span class="status status-wait">На рассмотрении</span></td></tr>
+            <tr><td>…4498</td><td>800 000 ₽</td><td>02.04.2026</td><td><span class="status status-ok">Исполнено</span></td></tr>
+            <tr><td>…4480</td><td>500 000 ₽</td><td>15.03.2026</td><td><span class="status status-draft">Черновик</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Рис. 9–10 — сопровождение, ковенанты -->
+      <section class="screen" id="fig9">
+        <h2>Сопровождение сделки <span class="badge">рис. 9–10</span></h2>
+        <p class="screen-desc">Карточка кредита: обязательства, график, документы, отлагательные условия и ковенанты; справки и выписки.</p>
+        <div class="split-2">
+          <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <strong>Карточка кредита</strong>
+            <p style="font-size:13px;color:var(--muted);margin:8px 0 0;">Платежи · Досрочное погашение · Документы · Сроки</p>
+            <button class="btn btn-secondary" type="button" style="margin-top:12px;">Погасить досрочно</button>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:10px;padding:14px;">
+            <strong>Отлагательные условия</strong>
+            <table class="data" style="margin-top:8px;">
+              <tr><th>Условие</th><th>Срок</th><th>Статус</th></tr>
+              <tr><td>Предоставить отчётность</td><td>30.04.2026</td><td><span class="status status-ok">Выполнено</span></td></tr>
+              <tr><td>Продление страховки</td><td>15.05.2026</td><td><span class="status status-wait">Ожидает</span></td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Рис. 11–12 — отправка документов -->
+      <section class="screen" id="fig11">
+        <h2>Отправка документов <span class="badge">рис. 11–12</span></h2>
+        <p class="screen-desc">«Отправить документы» → организация, договор, комментарий; загрузка файлов; тип документа; «Подписать»; статусы «Ожидает отправки», «Черновик».</p>
+        <div class="field-row">
+          <label class="field">Организация</label>
+          <select class="inp"><option>ООО «Пример»</option></select>
+        </div>
+        <div class="field-row">
+          <label class="field">Договор</label>
+          <select class="inp"><option>Кредитная линия № …</option></select>
+        </div>
+        <div class="field-row">
+          <label class="field">Комментарий</label>
+          <textarea class="inp">Ежеквартальная отчётность по сделке</textarea>
+        </div>
+        <div class="field-row">
+          <label class="field">Файлы</label>
+          <button class="btn btn-secondary" type="button">Выбрать файлы</button>
+          <span style="font-size:12px;color:var(--muted);margin-left:8px;">report_Q1.pdf</span>
+        </div>
+        <div class="field-row">
+          <label class="field">Тип документа</label>
+          <select class="inp"><option>Отчётность</option><option>Иное</option></select>
+        </div>
+        <button class="btn btn-primary" type="button">Подписать</button>
+        <p style="font-size:12px;color:var(--muted);margin-top:12px;">После подписания: архив с документами и файл подписи. Ошибка отправки → «Ожидает отправки»; ошибка оформления → «Черновик».</p>
+      </section>
+
+      <!-- Рис. 13 — договоры -->
+      <section class="screen" id="fig13">
+        <h2>Статус договоров <span class="badge">рис. 13</span></h2>
+        <p class="screen-desc">«Кредитные продукты» → «Договоры». Фильтр по документам и статусам.</p>
+        <p><input class="inp" type="search" placeholder="Фильтр по номеру или типу документа" style="max-width:320px;" /></p>
+        <table class="data">
+          <thead>
+            <tr><th>Документ</th><th>Договор</th><th>Статус</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Рамочный договор</td><td>№ …</td><td><span class="status status-ok">Действует</span></td></tr>
+            <tr><td>Доп. соглашение</td><td>№ …</td><td><span class="status status-wait">На подписи</span></td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- Рис. 14 — досрочное -->
+      <section class="screen" id="fig14">
+        <h2>Досрочное погашение <span class="badge">рис. 14</span></h2>
+        <p class="screen-desc">Выбор кредита / транша → «Погасить досрочно» → тип (частичное/полное), счёт, дата → «Подписать и отправить» → код из СМС. Статус — в «Заявления на транш».</p>
+        <div class="field-row">
+          <label class="field">Транш</label>
+          <select class="inp"><option>Транш № … — 800 000 ₽</option></select>
+        </div>
+        <div class="field-row">
+          <label class="field">Тип погашения</label>
+          <select class="inp"><option>Частичное</option><option>Полное</option></select>
+        </div>
+        <div class="field-row">
+          <label class="field">Счёт списания</label>
+          <select class="inp"><option>40702…</option></select>
+        </div>
+        <div class="field-row">
+          <label class="field">Дата погашения</label>
+          <input class="inp" type="text" value="25.04.2026" />
+        </div>
+        <button class="btn btn-primary" type="button">Подписать и отправить</button>
+        <p style="font-size:12px;color:var(--muted);margin-top:10px;">Код подтверждения отправлен на телефон ***-**-42</p>
+      </section>
+
+      <!-- Рис. 15 — закрытые -->
+      <section class="screen" id="fig15">
+        <h2>Закрытые продукты и повторное кредитование <span class="badge">рис. 15</span></h2>
+        <p class="screen-desc">После погашения сделка закрывается; клиент может снова инициировать заявку (новый цикл лимит — продукт — транш).</p>
+        <table class="data">
+          <thead>
+            <tr><th>Продукт</th><th>Закрыт</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Кредит (старый договор)</td>
+              <td>01.02.2026</td>
+              <td><button class="btn btn-secondary" type="button" style="padding:6px 12px;font-size:12px;">Новая заявка</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <p class="footnote">
+        Учебный макет по тексту кейса Changellenge / Альфа-Банк. Визуальное сходство с реальным интернет-банком не гарантируется; названия кнопок и разделов приведены по описанию в PDF.
+      </p>
+    </main>
+  </div>
+</body>
+</html>

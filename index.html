@@ -187,11 +187,11 @@
       <div class="role-bar">
         <span>Режим просмотра:</span>
         <select id="roleSelect" aria-label="Роль пользователя">
-          <option value="initiator">Инициатор</option>
+          <option value="initiator">Заявитель</option>
           <option value="watcher">Наблюдатель</option>
-          <option value="a3">Согласующий (уровень 3)</option>
-          <option value="a2">Согласующий (уровень 2)</option>
-          <option value="a1">Согласующий (уровень 1)</option>
+          <option value="a3">Подписант 3 уровня</option>
+          <option value="a2">Подписант 2 уровня</option>
+          <option value="a1">Подписант 1 уровня</option>
           <option value="ceo">Руководитель / CEO</option>
         </select>
       </div>
@@ -205,7 +205,7 @@
       <div class="nav-group">Меню</div>
       <button type="button" class="nav-item active" data-view="home">Главная</button>
       <button type="button" class="nav-item" data-view="apply">Новая заявка</button>
-      <button type="button" class="nav-item" data-view="queue">Согласования</button>
+      <button type="button" class="nav-item" data-view="queue">Подписание</button>
       <button type="button" class="nav-item" data-view="credits">Кредитные продукты</button>
       <button type="button" class="nav-item" data-view="docs">Документы</button>
     </aside>
@@ -300,25 +300,29 @@
           <div class="route-preview" id="routePreview"></div>
         </div>
 
-        <div class="card hidden" id="block-watchers">
-          <h2>Наблюдатели</h2>
-          <p style="font-size:12px;color:var(--muted);margin:0 0 8px;">Без права подписи — видят статус заявки.</p>
-          <div class="field">
-            <label for="watchersInput">E-mail через запятую</label>
-            <input type="text" id="watchersInput" placeholder="fin@company.ru, legal@company.ru" />
+        <div class="card" id="block-watchers">
+          <h2>Лист просмотра</h2>
+          <p style="font-size:12px;color:var(--muted);margin:0 0 12px;">Наблюдатель подключается через лист просмотра: видит ход процесса и статусы, без права подписи.</p>
+          <div class="field" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+            <div style="flex:1;min-width:220px;">
+              <label for="watchEmailInput">E-mail наблюдателя</label>
+              <input type="email" id="watchEmailInput" placeholder="colleague@company.ru" autocomplete="email" />
+            </div>
+            <button type="button" class="btn btn-secondary" id="btnAddWatcher">Добавить в лист</button>
           </div>
+          <ul id="watchListUl" style="margin:12px 0 0;padding:0;list-style:none;"></ul>
         </div>
 
         <p>
-          <button type="button" class="btn btn-primary" id="btnSubmitInternal">Отправить на согласование в компании</button>
+          <button type="button" class="btn btn-primary" id="btnSubmitInternal">Отправить на подписание в компании</button>
           <button type="button" class="btn btn-secondary" id="btnSaveDraft">Сохранить черновик</button>
         </p>
       </section>
 
-      <!-- Очередь согласований -->
+      <!-- Очередь подписания -->
       <section id="view-queue" class="hidden">
-        <h1>Согласования</h1>
-        <p class="page-sub">Внутренний маршрут до отправки в банк. Срок ответа по каждому шагу — до 5 рабочих дней (напоминание при задержке).</p>
+        <h1>Подписание</h1>
+        <p class="page-sub">Внутренний маршрут подписантов до отправки в банк. Наблюдатели из листа просмотра видят процесс без подписи. Срок по шагу — до 5 рабочих дней (напоминание при задержке).</p>
         <div class="card" id="approvalBox"></div>
       </section>
 
@@ -379,7 +383,7 @@
   <div id="modalTour" class="modal-overlay hidden">
     <div class="modal">
       <h3>Коротко о разделе</h3>
-      <p id="tourText">Здесь вы создаёте заявку, назначаете наблюдателей и запускаете внутреннее согласование. После всех подписей заявка уходит в банк.</p>
+      <p id="tourText">Здесь заявитель создаёт заявку, добавляет наблюдателей в лист просмотра и запускает внутреннее подписание. После подписей всех подписантов заявка уходит в банк.</p>
       <div class="modal-actions">
         <button type="button" class="btn btn-primary" id="btnTourClose">Понятно</button>
       </div>
@@ -388,7 +392,7 @@
 
   <script>
 (function () {
-  const STORAGE = 'alfa-credit-concept-v1';
+  const STORAGE = 'alfa-credit-concept-v2';
 
   const defaultState = () => ({
     experience: 'new',
@@ -398,7 +402,7 @@
     draftTerm: 36,
     draftGoal: 'turnover',
     draftProduct: 'vkl',
-    watchers: '',
+    watchList: [],
     approval: null,
     tourSeen: false,
     expModalSeen: false,
@@ -408,8 +412,21 @@
 
   function loadState() {
     try {
-      const j = localStorage.getItem(STORAGE);
-      if (j) return { ...defaultState(), ...JSON.parse(j) };
+      let raw = localStorage.getItem(STORAGE);
+      if (!raw) raw = localStorage.getItem('alfa-credit-concept-v1');
+      if (raw) {
+        const parsed = { ...defaultState(), ...JSON.parse(raw) };
+        if (!Array.isArray(parsed.watchList)) {
+          parsed.watchList = [];
+          if (parsed.watchers && typeof parsed.watchers === 'string') {
+            parsed.watchers.split(/[\s,;]+/).map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (e) {
+              if (parsed.watchList.indexOf(e) < 0) parsed.watchList.push(e);
+            });
+          }
+          delete parsed.watchers;
+        }
+        return parsed;
+      }
     } catch (e) {}
     return defaultState();
   }
@@ -440,14 +457,14 @@
   function buildRoute(amount) {
     const steps = [];
     if (amount <= thresholds.a3) {
-      steps.push({ id: 'a3', name: 'Согласующий уровня 3', desc: 'до ' + formatMoney(thresholds.a3) });
+      steps.push({ id: 'a3', name: 'Подписант 3 уровня', desc: 'до ' + formatMoney(thresholds.a3) });
     } else if (amount <= thresholds.a2) {
-      steps.push({ id: 'a3', name: 'Согласующий уровня 3', desc: 'до ' + formatMoney(thresholds.a3) });
-      steps.push({ id: 'a2', name: 'Согласующий уровня 2', desc: 'до ' + formatMoney(thresholds.a2) });
+      steps.push({ id: 'a3', name: 'Подписант 3 уровня', desc: 'до ' + formatMoney(thresholds.a3) });
+      steps.push({ id: 'a2', name: 'Подписант 2 уровня', desc: 'до ' + formatMoney(thresholds.a2) });
     } else {
-      steps.push({ id: 'a3', name: 'Согласующий уровня 3', desc: 'до ' + formatMoney(thresholds.a3) });
-      steps.push({ id: 'a2', name: 'Согласующий уровня 2', desc: 'до ' + formatMoney(thresholds.a2) });
-      steps.push({ id: 'a1', name: 'Согласующий уровня 1', desc: 'свыше ' + formatMoney(thresholds.a2) });
+      steps.push({ id: 'a3', name: 'Подписант 3 уровня', desc: 'до ' + formatMoney(thresholds.a3) });
+      steps.push({ id: 'a2', name: 'Подписант 2 уровня', desc: 'до ' + formatMoney(thresholds.a2) });
+      steps.push({ id: 'a1', name: 'Подписант 1 уровня', desc: 'свыше ' + formatMoney(thresholds.a2) });
     }
     return steps;
   }
@@ -459,6 +476,30 @@
     el.innerHTML = '<strong>Внутренний маршрут</strong><ul>' +
       steps.map((s, i) => '<li>Шаг ' + (i + 1) + ': ' + s.name + '</li>').join('') +
       '</ul><span style="font-size:12px;color:var(--muted)">После всех шагов — отправка в Альфа-Банк</span>';
+  }
+
+  function renderWatchList() {
+    const ul = document.getElementById('watchListUl');
+    if (!ul) return;
+    const list = state.watchList || [];
+    if (!list.length) {
+      ul.innerHTML = '<li style="font-size:12px;color:var(--muted);">Список пуст — добавьте наблюдателей в лист просмотра.</li>';
+      return;
+    }
+    ul.innerHTML = list.map(function (email, idx) {
+      return '<li style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;margin-bottom:6px;background:#f9fafb;border:1px solid var(--border);border-radius:8px;">' +
+        '<span>' + email + '</span>' +
+        '<button type="button" class="btn btn-secondary btn-sm" data-remove-watch="' + idx + '">Убрать</button></li>';
+    }).join('');
+    ul.querySelectorAll('[data-remove-watch]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const i = parseInt(btn.getAttribute('data-remove-watch'), 10);
+        state.watchList.splice(i, 1);
+        saveState();
+        renderWatchList();
+        toast('Лист просмотра обновлён');
+      });
+    });
   }
 
   function setTierUI() {
@@ -490,7 +531,7 @@
       repeat.classList.add('hidden');
       goalHint.textContent = 'Под выбранную цель подстраиваются поля и проверки.';
     } else if (state.experience === 'mid') {
-      sub.textContent = 'Акцент на завершении заявки и статусах согласования.';
+      sub.textContent = 'Акцент на завершении заявки и статусах подписания.';
       stepsEl.innerHTML = ['Параметры', 'Документы', 'Согласование', 'В банк'].map((x, i) =>
         '<span class="' + (i === 0 ? 'on' : '') + '">' + (i + 1) + '. ' + x + '</span>').join('');
       verify.classList.remove('hidden');
@@ -506,6 +547,7 @@
     }
     updateGoalDynamic();
     updateRoutePreview();
+    renderWatchList();
   }
 
   function updateGoalDynamic() {
@@ -553,12 +595,18 @@
       document.getElementById('nextStepBtn').onclick = () => { showView('credits'); toast('Раздел открыт'); };
     } else {
       ceo.classList.add('hidden');
-      homeSub.textContent = state.role === 'initiator'
-        ? 'Создание заявок и сопровождение до отправки в банк.'
-        : 'Просмотр и согласование в рамках ваших полномочий.';
+      if (state.role === 'initiator') {
+        homeSub.textContent = 'Заявитель: создание заявок и сопровождение до отправки в банк.';
+      } else if (state.role === 'watcher') {
+        homeSub.textContent = 'Наблюдатель: просмотр процесса по листу просмотра, без права подписи.';
+      } else if (state.role === 'a1' || state.role === 'a2' || state.role === 'a3') {
+        homeSub.textContent = 'Подписант: подписание заявки на своём уровне.';
+      } else {
+        homeSub.textContent = 'Просмотр для руководства и контроля сроков.';
+      }
       if (state.approval && state.approval.status !== 'bank') {
         nextBar.classList.remove('hidden');
-        document.getElementById('nextStepText').textContent = 'Согласовать заявку во внутренней очереди';
+        document.getElementById('nextStepText').textContent = 'Подписать заявку во внутренней очереди';
         document.getElementById('nextStepBtn').onclick = () => showView('queue');
       } else {
         nextBar.classList.add('hidden');
@@ -581,7 +629,8 @@
       steps: steps.map(s => ({ ...s, approved: false })),
     };
     saveState();
-    toast('Заявка отправлена на внутреннее согласование');
+    var wc = state.watchList && state.watchList.length;
+    toast('Заявка отправлена на внутреннее подписание' + (wc ? ' · наблюдателей в листе: ' + wc : ''));
     showView('queue');
     renderApprovals();
   }
@@ -589,11 +638,14 @@
   function renderApprovals() {
     const box = document.getElementById('approvalBox');
     if (!state.approval) {
-      box.innerHTML = '<p style="margin:0;color:var(--muted);">Нет активных заявок на согласование.</p>';
+      box.innerHTML = '<p style="margin:0;color:var(--muted);">Нет активных заявок на подписание.</p>';
       return;
     }
     const A = state.approval;
     let html = '<p style="margin:0 0 12px;font-weight:600;">Заявка ' + A.id + ' · ' + formatMoney(A.amount) + '</p>';
+    if (state.watchList && state.watchList.length) {
+      html += '<p style="font-size:12px;color:var(--muted);margin:-4px 0 12px;">Лист просмотра (наблюдатели): ' + state.watchList.join(', ') + '</p>';
+    }
     A.steps.forEach((s, i) => {
       const isPending = i === A.currentIndex && !s.approved;
       const roleMatch =
@@ -651,7 +703,7 @@
     btn.addEventListener('click', () => {
       const v = btn.getAttribute('data-view');
       if (!roleAllows(v)) {
-        toast('Смените роль на «Инициатор» или «Руководитель» для создания заявки');
+        toast('Смените роль на «Заявитель» или «Руководитель» для создания заявки');
         return;
       }
       showView(v);
@@ -680,6 +732,20 @@
 
   document.getElementById('btnSubmitInternal').addEventListener('click', startApprovalFlow);
   document.getElementById('btnSaveDraft').addEventListener('click', () => toast('Черновик сохранён'));
+
+  document.getElementById('btnAddWatcher').addEventListener('click', function () {
+    const inp = document.getElementById('watchEmailInput');
+    const v = (inp.value || '').trim();
+    if (!v) { toast('Введите e-mail наблюдателя'); return; }
+    if (!/^[^\s@]+@[^\s@]+$/.test(v)) { toast('Проверьте формат e-mail'); return; }
+    if (!state.watchList) state.watchList = [];
+    if (state.watchList.indexOf(v) >= 0) { toast('Уже в листе просмотра'); return; }
+    state.watchList.push(v);
+    inp.value = '';
+    saveState();
+    renderWatchList();
+    toast('Наблюдатель добавлен в лист просмотра');
+  });
 
   document.getElementById('btnBankContact').addEventListener('click', () => toast('Запрос отправлен менеджеру'));
 
@@ -712,6 +778,7 @@
     document.getElementById('modalExperience').classList.remove('hidden');
   }
   applyExperienceUI();
+  renderWatchList();
   renderHomeForRole();
   showView('home');
 
